@@ -1,0 +1,47 @@
+? my $app = shift;
+<html>
+  <head>
+    <script type="text/javascript" src="/static/prototype.js"></script>
+    <script type="text/javascript">
+      document.observe("dom:loaded", function() {
+        $('message').observe('submit', function(e) {
+          e.stop();
+          new Ajax.Request("/post", {
+            method: 'post',
+            parameters: $('message').serialize(),
+            onSuccess: function(transport) {
+              console.log("sent message");
+            }
+          });
+        });
+        setTimeout(function () {
+          new Ajax.Request("/stream", {
+            method: 'get',
+            onInteractive: function(transport) {
+              var data = evalJSON(transport.responseText);
+              data.each(function(item) {
+                alert(item);
+                $('messages').insert(item);
+              });
+            },
+          });
+        }, 1000);
+      });
+    </script>
+  </head>
+  <body>
+    <h1>message stream</h1>
+    <p><?= scalar @{$app->streams} + 1?> connections</p>
+    <form id="message" method="post" action="/post">
+      <input type="text" name="author" value="Author" id="author" />
+      <br />
+      <textarea name="msg"></textarea>
+      <input type="submit" value="Send" />
+    </form>
+    <ul id="messages">
+    <? for (@{$app->messages}) { ?>
+      <li><?=$_?></li>
+    <? } ?>
+    </ul>
+  </body>
+</html>
