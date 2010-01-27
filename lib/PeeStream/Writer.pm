@@ -22,6 +22,17 @@ has connected => (
   default => 1,
 );
 
+has started => (
+  is  => 'rw',
+  isa => 'Bool',
+  default => 0,
+);
+
+has seperator => (
+  is  => 'ro',
+  default => 'xpeestreamx',
+);
+
 sub respond {
   my $self = shift;
   return sub {
@@ -34,6 +45,10 @@ sub respond {
 sub send {
   my ($self, $json) = @_;
   try {
+    if (! $self->started) {
+      $json = "--".$self->seperator."\n$json";
+      $self->started(1);
+    }
     $self->writer->write($json);
   } catch {
     warn "Got error: $_\n";

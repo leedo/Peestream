@@ -7,6 +7,7 @@ use 5.010;
 use PeeStream::Writer;
 use Plack::Request;
 use HTML::Entities;
+use Text::MicroTemplate qw/encoded_string/;
 use Text::MicroTemplate::File;
 use AnyEvent;
 use Any::Moose;
@@ -39,6 +40,7 @@ has streams => (
 has queue => (
   is  => 'rw',
   isa => 'ArrayRef[Str]',
+  default => sub {[]},
 );
 
 has messages => (
@@ -70,9 +72,7 @@ sub call {
     }
     when (/^\/post\/?$/) {
       if (my $msg = $req->param('msg')) {
-        my $author = $req->param('author');
-        my $html = $self->mtf->render_file("message.html", $author, $msg);
-        $html .= " " x (1024 - length($html));
+        my $html = $self->mtf->render_file("message.html", $msg);
         push @{$self->queue}, "$html";
         $self->broadcast;
       }
@@ -105,9 +105,12 @@ sub purge_streams {
 
 sub broadcast {
   my $self = shift;
-  my $json = to_json($self->messages);
+  my $json = to_json($self->queue);
+  $json .= " " x (1024 - length $json)
+    if length $json < 1024;
+  $json .= "\n--xpeestreamx\n";
   $_->send($json) for @{$self->streams};
-  push @{$self->messages}, @{$self->queue};
+  push @{$self->messages}, map {encoded_string($_)} @{$self->queue};
   $self->queue([]);
 }
 

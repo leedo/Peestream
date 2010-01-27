@@ -1,6 +1,29 @@
 ? my $app = shift;
 <html>
   <head>
+    <style type="text/css">
+      ul {
+        height: 200px;
+        width: 500px;
+        overflow: auto;
+        border: 1px solid #ccc;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      li {
+        margin: 0;
+        padding: 0;
+        border-bottom: 1px solid #eee;
+      }
+      li p {
+        margin: 0.5em;
+      }
+      textarea {
+        width: 500px;
+        border: 1px solid #ccc;
+      }
+    </style>
     <script type="text/javascript" src="/static/prototype.js"></script>
     <script type="text/javascript">
       document.observe("dom:loaded", function() {
@@ -10,37 +33,54 @@
             method: 'post',
             parameters: $('message').serialize(),
             onSuccess: function(transport) {
-              console.log("sent message");
             }
           });
+          return false;
         });
         setTimeout(function () {
+          var len = 0;
+          var seperator = "--xpeestreamx\n";
           new Ajax.Request("/stream", {
             method: 'get',
             onInteractive: function(transport) {
-              var data = evalJSON(transport.responseText);
-              data.each(function(item) {
-                alert(item);
-                $('messages').insert(item);
-              });
+              var data = transport.responseText.slice(len);
+              var start, end;
+              start = data.indexOf(seperator);
+              if (start > -1) {
+                start += seperator.length;
+                end = data.indexOf(seperator, start);
+                if (end == -1) return;
+              }
+              else return;
+              len += (end + seperator.length) - start;
+              data = data.slice(start, end);
+              try {
+                data = data.evalJSON();
+                data.each(function(item) {
+                  $('messages').insert({top: item});
+                });
+              }
+              catch (e) {
+              }
             },
+            onSuccess: function(transport) {
+            },
+            onFailure: function(transport) {
+              alert("done: error");
+            }
           });
         }, 1000);
       });
     </script>
   </head>
   <body>
-    <h1>message stream</h1>
-    <p><?= scalar @{$app->streams} + 1?> connections</p>
     <form id="message" method="post" action="/post">
-      <input type="text" name="author" value="Author" id="author" />
-      <br />
-      <textarea name="msg"></textarea>
+      <textarea name="msg"></textarea><br>
       <input type="submit" value="Send" />
     </form>
     <ul id="messages">
     <? for (@{$app->messages}) { ?>
-      <li><?=$_?></li>
+      <?= $_ ?>
     <? } ?>
     </ul>
   </body>
