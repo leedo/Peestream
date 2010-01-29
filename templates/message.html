@@ -1,2 +1,15 @@
 ? my $msg = shift;
-<li><p><?= $msg ?></p></li>
+<tr>
+  <td class="info">
+    <span class="author"><?= $msg->author ?></span><br>
+    <span class="time"><?= $msg->datetime ?></span>
+  </td>
+  <td class="body">
+    <? for (@{$msg->images}) { ?>
+      <img src="/static/<?= $_ ?>" />
+    <? } ?>
+    <? for (split /\n/, $msg->body) { ?>
+      <p><?= $_ ?></p>
+    <? } ?>
+  </td>
+</tr>

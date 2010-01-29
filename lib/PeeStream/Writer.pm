@@ -3,6 +3,7 @@ package PeeStream::Writer;
 use 5.010;
 use strict;
 use warnings;
+
 use Any::Moose;
 use Try::Tiny;
 
@@ -28,11 +29,6 @@ has started => (
   default => 0,
 );
 
-has seperator => (
-  is  => 'ro',
-  default => 'xpeestreamx',
-);
-
 sub respond {
   my $self = shift;
   return sub {
@@ -46,12 +42,13 @@ sub send {
   my ($self, $json) = @_;
   try {
     if (! $self->started) {
-      $json = "--".$self->seperator."\n$json";
+      $json = "--xpeestreamx\n$json";
       $self->started(1);
     }
     $self->writer->write($json);
   } catch {
     warn "Got error: $_\n";
+    $self->writer->close;
     $self->connected(0);
   }
 }

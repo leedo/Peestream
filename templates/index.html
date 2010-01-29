@@ -2,40 +2,75 @@
 <html>
   <head>
     <style type="text/css">
-      ul {
-        height: 200px;
-        width: 500px;
-        overflow: auto;
-        border: 1px solid #ccc;
-        list-style: none;
-        margin: 0;
-        padding: 0;
+      body {
+        font-family: Helvetica, Arial, sans-serif;
       }
-      li {
+      p {
         margin: 0;
-        padding: 0;
-        border-bottom: 1px solid #eee;
-      }
-      li p {
-        margin: 0.5em;
+        padding-bottom: 5px;
       }
       textarea {
-        width: 500px;
+        width: 100%;
+        height: 60px;
         border: 1px solid #ccc;
+      }
+      table#controls th {
+        text-align: left;
+      }
+      table#messages td.info {
+        position: relative;
+        width: 100px;
+        background: #efefef;
+        border-bottom: 1px solid #ccc;
+      }
+      table#messages td {
+        border-bottom: 1px solid #eee;
+        vertical-align: top;
+        padding: 5px 10px;
+      }
+      table#messages {
+        width: 100%;
+        border: 1px solid #ccc;
+        border-bottom: none;
+        border-left: none;
+      }
+      span.author {
+        font-weight: bold;
+      }
+      span.time {
+        color: #999;
+        font-size: 0.7em;
       }
     </style>
     <script type="text/javascript" src="/static/prototype.js"></script>
     <script type="text/javascript">
+      var shifting = false;
       document.observe("dom:loaded", function() {
-        $('message').observe('submit', function(e) {
+        $('msg_text').focus();
+        var submitMessage = function(e) {
           e.stop();
           new Ajax.Request("/post", {
             method: 'post',
             parameters: $('message').serialize(),
             onSuccess: function(transport) {
+              $('msg_text').value = '';
+              $('msg_text').focus();
             }
           });
-          return false;
+        };
+        $('message').observe('submit', submitMessage);
+        $('msg_text').observe('keydown', function (e) {
+          if (! shifting && e.keyCode == "13") {
+            console.log(shifting);
+            e.stop();
+            submitMessage(e);
+          }
+        });
+        document.observe('keydown', function (e) {
+          if (e.keyCode == 16) shifting = true;
+        });
+        document.observe('keyup', function(e) {
+          if (e.keyCode == 16) shifting = false;
         });
         setTimeout(function () {
           var len = 0;
@@ -66,7 +101,6 @@
             onSuccess: function(transport) {
             },
             onFailure: function(transport) {
-              alert("done: error");
             }
           });
         }, 1000);
@@ -75,13 +109,33 @@
   </head>
   <body>
     <form id="message" method="post" action="/post">
-      <textarea name="msg"></textarea><br>
-      <input type="submit" value="Send" />
+      <table width="100%" id="controls">
+        <thead>
+          <tr>
+            <th>Message</th>
+            <th>Images</th>
+          </tr>
+        </thead>
+        <tr>
+          <td width="50%">
+            <textarea name="msg" id="msg_text" tabindex="1"></textarea>
+          </td>
+          <td valign="top">
+            <input type="file" name="image" id="image1" />
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <input type="submit" value="Post message" tabindex="2" />
+            <span style="color:#999;font-size:0.7em">as</span> <input type="text" name="author" />
+          </td>
+        </tr>
+      </table>
     </form>
-    <ul id="messages">
-    <? for (@{$app->messages}) { ?>
+    <table id="messages" cellspacing="0" cellpadding="0">
+    <? for (reverse @{$app->messages}) { ?>
       <?= $_ ?>
     <? } ?>
-    </ul>
+    </table>
   </body>
 </html>
