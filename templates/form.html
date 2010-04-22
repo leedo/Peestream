@@ -25,9 +25,8 @@
         $('msg_text').focus();
         $('msg_text').observe('keydown', function (e) {
           if (! shifting && e.keyCode == "13") {
-            console.log(shifting);
             e.stop();
-            submitMessage(e);
+            $('message').submit();
           }
         });
         document.observe('keydown', function (e) {
