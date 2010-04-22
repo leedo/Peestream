@@ -11,9 +11,9 @@ has body => (
   isa => 'Str',
 );
 
-has images => (
+has files => (
   is  => 'rw',
-  isa => 'ArrayRef[Path::Class::File]',
+  isa => 'ArrayRef',
   default => sub {[]},
 );
 

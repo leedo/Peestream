@@ -6,6 +6,7 @@ use 5.010;
 
 use PeeStream::Writer;
 use PeeStream::Message;
+use PeeStream::Upload;
 use Plack::Request;
 use Text::MicroTemplate qw/encoded_string/;
 use Text::MicroTemplate::File;
@@ -65,6 +66,7 @@ sub call {
   my ($self, $env) = @_;
   my $req = Plack::Request->new($env);
   $self->purge_streams;
+  my $author = $req->param("author") || "Anonymous";
   given ($req->path) {
     when (/^\/stream\/?$/) {
       my $stream = PeeStream::Writer->new(req => $req);
@@ -72,20 +74,26 @@ sub call {
       return $stream->respond;
     }
     when (/^\/post\/?$/) {
+      my @uploads = map {PeeStream::Upload->new(upload => $_)}
+                    grep {$_} ($req->uploads->{file});
       my $msg = PeeStream::Message->new(
-        author => $req->param("author") || "Anonymous",
+        author => $author,
         body   => $req->param('msg'),
-        #images => $req->uploads->{image},
+        files  => [ @uploads ],
       );
-      if ($msg->body or @{$msg->images}) {
+      if ($msg->body or @{$msg->files}) {
         my $html = $self->mtf->render_file("message.html", $msg);
         push @{$self->queue}, "$html";
         $self->broadcast;
-        return [200, [], ['ok']];
+        return [301, ["Location", "/form?author=$author"], ['redirect']];
       }
       else {
         return [500, [], ["Unable to add message: $_"]];
       }
+    }
+    when (/^\/form\/?/) {
+      my $html = $self->mtf->render_file("form.html", $self, $author);
+      return [200, ['Content-Type','text/html'],[$html]];
     }
     when (/^\/static\/(.+)/) {
       my $file = $self->static->file($1);

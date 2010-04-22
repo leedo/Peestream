@@ -9,13 +9,10 @@
         margin: 0;
         padding-bottom: 5px;
       }
-      textarea {
+
+      iframe {
         width: 100%;
-        height: 60px;
-        border: 1px solid #ccc;
-      }
-      table#controls th {
-        text-align: left;
+        border: none;
       }
       table#messages td.info {
         position: relative;
@@ -44,34 +41,7 @@
     </style>
     <script type="text/javascript" src="/static/prototype.js"></script>
     <script type="text/javascript">
-      var shifting = false;
       document.observe("dom:loaded", function() {
-        $('msg_text').focus();
-        var submitMessage = function(e) {
-          e.stop();
-          new Ajax.Request("/post", {
-            method: 'post',
-            parameters: $('message').serialize(),
-            onSuccess: function(transport) {
-              $('msg_text').value = '';
-              $('msg_text').focus();
-            }
-          });
-        };
-        $('message').observe('submit', submitMessage);
-        $('msg_text').observe('keydown', function (e) {
-          if (! shifting && e.keyCode == "13") {
-            console.log(shifting);
-            e.stop();
-            submitMessage(e);
-          }
-        });
-        document.observe('keydown', function (e) {
-          if (e.keyCode == 16) shifting = true;
-        });
-        document.observe('keyup', function(e) {
-          if (e.keyCode == 16) shifting = false;
-        });
         setTimeout(function () {
           var len = 0;
           var seperator = "--xpeestreamx\n";
@@ -108,30 +78,7 @@
     </script>
   </head>
   <body>
-    <form id="message" method="post" action="/post">
-      <table width="100%" id="controls">
-        <thead>
-          <tr>
-            <th>Message</th>
-            <th>Images</th>
-          </tr>
-        </thead>
-        <tr>
-          <td width="50%">
-            <textarea name="msg" id="msg_text" tabindex="1"></textarea>
-          </td>
-          <td valign="top">
-            <input type="file" name="image" id="image1" />
-          </td>
-        </tr>
-        <tr>
-          <td colspan="2">
-            <input type="submit" value="Post message" tabindex="2" />
-            <span style="color:#999;font-size:0.7em">as</span> <input type="text" name="author" />
-          </td>
-        </tr>
-      </table>
-    </form>
+    <iframe src="form"></iframe>
     <table id="messages" cellspacing="0" cellpadding="0">
     <? for (reverse @{$app->messages}) { ?>
       <?= $_ ?>
