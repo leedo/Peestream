@@ -75,7 +75,7 @@ sub call {
       my $msg = PeeStream::Message->new(
         author => $req->param("author") || "Anonymous",
         body   => $req->param('msg'),
-        images => $req->uploads->{image},
+        #images => $req->uploads->{image},
       );
       if ($msg->body or @{$msg->images}) {
         my $html = $self->mtf->render_file("message.html", $msg);
