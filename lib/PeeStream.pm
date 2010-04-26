@@ -85,30 +85,13 @@ sub call {
         my $html = $self->mtf->render_file("message.html", $msg);
         push @{$self->queue}, "$html";
         $self->broadcast;
-        return [301, ["Location", "/form?author=$author"], ['redirect']];
       }
-      else {
-        return [500, [], ["Unable to add message: $_"]];
-      }
+      my $html = $self->mtf->render_file("form.html", $self, $author);
+      return [200, ['Content-Type','text/html'],[$html]];
     }
     when (/^\/form\/?/) {
       my $html = $self->mtf->render_file("form.html", $self, $author);
       return [200, ['Content-Type','text/html'],[$html]];
-    }
-    when (/^\/static\/(.+)/) {
-      my $file = $self->static->file($1);
-      if ($self->static->contains($file)) {
-        my $fh = $self->static->file($1)->openr;
-        my $mime;
-        given ($file->basename) {
-          when (/\.js$/)  {$mime = "text/javascript"}
-          when (/\.jpg$/) {$mime = "image/jpeg"}
-          when (/\.gif$/) {$mime = "image/gif"}
-          when (/\.png$/) {$mime = "image/png"}
-        }
-        return [200, ['Content-Type', $mime], $fh];
-      }
-      return [400, ['Content-Type', 'text/plain'], ['not found']];
     }
     when ("/") {
       my $html = $self->mtf->render_file("index.html", $self);
