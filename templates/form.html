@@ -4,6 +4,14 @@
     <style type="text/css">
       body {
         font-family: Helvetica, Arial, sans-serif;
+        height: 150px;
+        margin: 0;
+        padding: 0;
+      }
+      form#message {
+        display: block;
+        margin: 0;
+        height: 150px;
       }
       p {
         margin: 0;
@@ -14,8 +22,45 @@
         height: 60px;
         border: 1px solid #ccc;
       }
+      table#controls {
+        height: 150px;
+      }
       table#controls th {
         text-align: left;
+      }
+      ul#uploads {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        height: 118px;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+      ul#uploads li:first-child {
+        padding: 0 0 4px 0;
+        border-top: none;
+      }
+      ul#uploads li {
+        border-top: 1px solid #eee;
+        padding: 4px 0;
+      }
+      button {
+        margin-top: 8px;
+        color: #fff;
+        background: #ccc;
+        float: right;
+        font-size: 12px;
+        border: none;
+        padding: 0;
+        text-align: center;
+        width: 13px;
+        height: 13px;
+        border-radius: 1em;
+        line-height: 7px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #ab0000;
       }
     </style>
     <script type="text/javascript" src="/static/prototype.js"></script>
@@ -35,6 +80,27 @@
         document.observe('keyup', function(e) {
           if (e.keyCode == 16) shifting = false;
         });
+        $('uploads').observe('click', function(e) {
+          var button = e.findElement("button");
+          if (button) {
+            e.stop();
+            var li = button.up("li").remove();
+            if (!$$('#uploads li').length) {
+              li.down("input[type='file']").value = "";
+              $('uploads').insert(li);
+            }
+            return;
+          }
+        });
+        $('uploads').observe('change', function(e) {
+          var input = e.findElement("input[type='file']");
+          if (input && input.value) {
+            var li = $('uploads').down('li').clone(true);
+            console.log(li);
+            li.down("input[type='file']").value = "";
+            $('uploads').insert(li);
+          }
+        });
       });
     </script>
   </head>
@@ -51,12 +117,17 @@
           <td width="50%">
             <textarea name="msg" id="msg_text" tabindex="1"></textarea>
           </td>
-          <td valign="top">
-            <input type="file" name="file" id="file1" />
+          <td valign="top" rowspan="2">
+            <ul id="uploads">
+              <li>
+                <input type="file" name="file" />
+                <button>x</button>
+              </li>
+            </ul>
           </td>
         </tr>
         <tr>
-          <td colspan="2">
+          <td>
             <input type="submit" value="Post message" tabindex="2" />
             <span style="color:#999;font-size:0.7em">as</span> <input type="text" name="author" value="<?= $author ?>" />
           </td>

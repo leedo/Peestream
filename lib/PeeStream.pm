@@ -75,10 +75,10 @@ sub call {
     }
     when (/^\/post\/?$/) {
       my @uploads = map {PeeStream::Upload->new(upload => $_)}
-                    grep {$_} ($req->uploads->{file});
+                    grep {$_} ($req->uploads->get_all("file"));
       my $msg = PeeStream::Message->new(
         author => $author,
-        body   => $req->param('msg'),
+        body   => $req->param('msg') || "",
         files  => [ @uploads ],
       );
       if ($msg->body or @{$msg->files}) {
