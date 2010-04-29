@@ -5,15 +5,22 @@
     <span class="time"><?= $msg->datetime ?></span>
   </td>
   <td class="body">
-    <? for (@{$msg->files}) { ?>
-      <? if ($_->is_image) { ?>
-        <img src="<?= $_->path ?>" />
-      <? } else { ?>
-        <a target="_blank" href="<?= $_->path ?>"><?= $_->filename ?></a>
-      <? } ?>
-    <? } ?>
     <? for (split /\n/, $msg->body) { ?>
       <p><?= $_ ?></p>
     <? } ?>
+    <h3>Attachments</h3>
+    <ul class="uploads">
+    <? for (@{$msg->files}) { ?>
+      <li>
+      <? if ($_->is_image) { ?>
+        <a target="_blank" href="<?= $_->path ?>">
+          <img src="<?= $_->path ?>" />
+        </a>
+      <? } else { ?>
+        <a target="_blank" href="<?= $_->path ?>"><?= $_->filename ?></a>
+      <? } ?>
+      </li>
+    <? } ?>
+    </ul>
   </td>
 </tr>
