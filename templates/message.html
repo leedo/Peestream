@@ -9,7 +9,7 @@
       <? if ($_->is_image) { ?>
         <img src="<?= $_->path ?>" />
       <? } else { ?>
-        <a href="<?= $_->path ?>"><?= $_->filename ?></a>
+        <a target="_blank" href="<?= $_->path ?>"><?= $_->filename ?></a>
       <? } ?>
     <? } ?>
     <? for (split /\n/, $msg->body) { ?>
