@@ -8,6 +8,7 @@
     <? for (split /\n/, $msg->body) { ?>
       <p><?= $_ ?></p>
     <? } ?>
+    <? if (@{$msg->files}) { ?>
     <h3>Attachments</h3>
     <ul class="uploads">
     <? for (@{$msg->files}) { ?>
@@ -22,5 +23,6 @@
       </li>
     <? } ?>
     </ul>
+    <? } ?>
   </td>
 </tr>
