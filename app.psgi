@@ -1,6 +1,8 @@
 use lib 'lib';
 use PeeStream;
+use Plack::Builder;
 
-my $app = PeeStream->new->to_psgi;
-
-return $app;
+builder {
+  enable "Static", path => qr{^/static/};
+  mount "/" => PeeStream->new->to_psgi;
+}
